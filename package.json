@@ -1,6 +1,6 @@
 {
   "name": "mmpaginator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MMPaginator is a ready-made Angular component for displaying and handling the page navigation block, usually put under the table that lists the data and allows the user to display parts of it (as pages).",
   "author": "Misha Mashina",
   "repository": {
@@ -13,7 +13,10 @@
     "javascript",
     "typescript",
     "paginator",
-    "customizable"
+    "mmpaginator",
+    "mm-paginator",
+    "custom",
+    "misha mashina"
   ],
   "license": "Free",
   "peerDependencies": {
@@ -21,6 +24,6 @@
     "@angular/core": "^9.1.13"
   },
   "dependencies": {
-    "tslib": "^2.0.0"
+    "tslib": "^1.10.0"
   }
 }

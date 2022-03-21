@@ -4,13 +4,13 @@
     "directive-selector": [
       true,
       "attribute",
-      "mMPag",
+      "lib",
       "camelCase"
     ],
     "component-selector": [
       true,
       "element",
-      "mmpag",
+      "lib",
       "kebab-case"
     ]
   }
