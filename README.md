@@ -1,4 +1,4 @@
-# Paginator Component
+# MMPaginator Component
 
 Content:
 1. [About](#1-about)
