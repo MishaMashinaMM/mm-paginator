@@ -1,12 +1,12 @@
 # Paginator Component
 
 Content:
-1. [About](#1.-about)
-2. [Usage](#2.-usage)
-3. [Implementation](#3.-implementation)
-4. [Warnings in paginator](#4.-warnings-in-paginator)
-5. [Author](#5.-author)
-6. [Final notes](#7.-final-notes)
+1. [About](#1-about)
+2. [Usage](#2-usage)
+3. [Implementation](#3-implementation)
+4. [Warnings in paginator](#4-warnings-in-paginator)
+5. [Author](#5-author)
+6. [Final notes](#7-final-notes)
 <br><br>
 
 ---
@@ -15,7 +15,7 @@ Content:
 
 _MMPaginator_ is a ready-made Angular component for displaying and handling the page navigation block, usually put under the table that lists the data and allows the user to display parts of it (as pages).
 
-><font size="4">Read [Usage](#2.-usage) for detailed explanation, or skip to [Implementation](#3.-implementation) for jumping right into it.</font>
+><font size="4">Read [Usage](#2-usage) for detailed explanation, or skip to [Implementation](#3-implementation) for jumping right into it.</font>
 
 It is made to be dynamic and dumb: it requires few inputs form the parent component and will handle few variables by itself, returning just one to parent.
 
@@ -310,11 +310,15 @@ MMPaginator STYLES: END
 
 # 6. Final notes
 
-- You can use this component and its code freely, with or without changes, and as you see fit.
+## Licence
 
-- While this component is too simple to offer any room for errors/bugs, the responsibility for the effects of using it _(modified or not)_ rests solely on you and not on the author.
+You can use this component and its code freely, with or without changes, and as you see fit.
 
-- The code is _heavily_ commented. Feel free to delete the stuff, modify it, or just laugh at the author's obsession with documenting it all.
+While this component is too simple to offer any room for errors/bugs, the responsibility for the effects of using it _(modified or not)_ rests solely on you and not on the author.
+
+## A word on docs
+
+The code is _heavily_ commented. Feel free to delete the stuff, modify it, or just laugh at the author's obsession with documenting it all.
 
 ---
 
