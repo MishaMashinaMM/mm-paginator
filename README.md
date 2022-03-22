@@ -117,16 +117,19 @@ Note: linked project has some extra code (not inherent to Paginator) just to sho
 - To display particular text on the buttons, set that string in parent's variables initialization:
 
   `prevText: string = 'PREV;` // or whatever you want
+
   `nextText: string = 'NEXT;` // or whatever you want
 
   and pass it to _[prevText]_ and _[nextText]_ @Input of the paginator via the template:
 
   `[prevText]="prevText"`
+
   `[nextText]="nextText"`
 
-- If you don't want to introduce such vars in parent, just pass the value to*[prevText]* and _[nextText]_ @Input of the paginator via the template, like:
+- If you don't want to introduce such vars in parent, just pass the value to _[prevText]_ and _[nextText]_ @Input of the paginator via the template, like:
 
   `[prevText]="PREV"`
+
   `[nextText]="NEXT"`
 
 ## 2.6. Paginator to parent communication
@@ -210,7 +213,7 @@ MMPaginator STYLES: END
 
     - **main div** container: `'mm-p-main'`
     - **previous** button: `'mm-p-prev'`
-    - **next** button: `'mm-p-prev'`
+    - **next** button: `'mm-p-next'`
     - **empty** element (showing [...]): `'mm-p-empty'`
     - **pages** buttons: `'mm-p-'` + their label (as number), for example: `'mm-p-1', 'mm-p-2'` etc.
 
