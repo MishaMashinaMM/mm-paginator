@@ -1,29 +1,26 @@
 {
-  "name": "mmpaginator",
-  "version": "1.0.1",
-  "description": "MMPaginator is a ready-made Angular component for displaying and handling the page navigation block, usually put under the table that lists the data and allows the user to display parts of it (as pages).",
+  "name": "mmtabler",
+  "version": "1.1.0",
+  "description": "MMTabler is a ready-made Angular component for displaying and handling the tabular display of one-dimensional json data. With various options to configure, MMTabler also features options for editing, deleting and adding new entries.",
   "author": "Misha Mashina",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MishaMashinaMM/mm-paginator.git"
+    "url": "https://github.com/MishaMashinaMM/mm-tabler.git"
   },
-  "homepage": "https://github.com/MishaMashinaMM/mm-paginator",
+  "homepage": "https://github.com/MishaMashinaMM/mm-tabler",
   "keywords": [
     "angular",
     "javascript",
     "typescript",
-    "paginator",
-    "mmpaginator",
-    "mm-paginator",
+    "tabler",
+    "table",
+    "mmtabler",
+    "mm-tabler",
     "custom",
     "misha mashina"
   ],
-  "license": "Free",
   "peerDependencies": {
     "@angular/common": "^9.1.13",
     "@angular/core": "^9.1.13"
-  },
-  "dependencies": {
-    "tslib": "^1.10.0"
   }
 }

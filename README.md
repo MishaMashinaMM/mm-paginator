@@ -1,305 +1,372 @@
-# MMPaginator Component
+# MMTabler Component
 
 Content:
 1. [About](#1-about)
 2. [Usage](#2-usage)
 3. [Implementation](#3-implementation)
-4. [Warnings in paginator](#4-warnings-in-paginator)
-5. [Author](#5-author)
-6. [Final notes](#7-final-notes)
+4. [Warnings in MMTabler](#4-warnings-in-mmtabler)
+5. [Changes in the versions](#5-changes-in-the-versions)
+6. [Author](#6-author)
+7. [Final notes](#7-final-notes)
 <br><br>
 
 ---
 
 # 1. About
 
-_MMPaginator_ is a ready-made Angular component for displaying and handling the page navigation block, usually put under the table that lists the data and allows the user to display parts of it (as pages).
+_MMTabler_ is a ready-made Angular component for handling the tabelar display of data. It is easy to use, responsive, flexible and highly customizable.
 
 ><font size="4">Read [Usage](#2-usage) for detailed explanation, or skip to [Implementation](#3-implementation) for jumping right into it.</font>
 
-It is made to be dynamic and dumb: it requires few inputs form the parent component and will handle few variables by itself, returning just one to parent.
+It is made to be dynamic and dumb: it requires few inputs from the parent component (with more optional inputs) and will handle few variables by itself, returning just one to parent - although you can opt not to emit anything to parent.
 
-You can also easily customize its DOM elements, since all elements (static or dynamic) are generated with **id**s, so you can access them simply by getElementById (see **Customizing paginator elements** further below). Default css class is also provided.
+Among many options you can set, there are options to use custom headers, reorder them or remove some - whatever your original table data actually is; to allow editing, deleting or adding table entries; you can also easily customize its DOM elements, since all elements (static or dynamic) are generated with **id**s, so you can access them simply by getElementById (see **Customizing MMTabler elements** further below). Default css variables are also provided for insertion into global css file, but feel free to check the component's css classes too.
 
-Unlike most existing paginator packages, this one will display the label for obvious pages. For example (if set to display 2 pages around the **[active]** one), instead of displaying:
+MMTabler is meant to display one-dimensional (not nested) array of objects, where each object is a table's row entry. If you want to display nested data, MMTabler is not for you. 
 
-`PREV 1 ... 3 4 [5] 6 7 ... 13 NEXT`
+><br><font size="4">See it in action: [MMTabler at Stackblitz](https://stackblitz.com/edit/angular-ivy-en2da4)<br><br></font>
 
-_where it's obvious that first [...] stands for page 2_
-
-this Paginator will display:
-
-`PREV 1 2 3 4 [5] 6 7 ... 13 NEXT`
-
-same goes for the next-to-last page in cases like:
-
-`PREV 1 ... 7 8 [9] 10 11 12 13 NEXT`
-
-
-><br><font size="4">See it in action: [MMPaginator at Stackblitz](https://stackblitz.com/edit/angular-ivy-pogcvd)<br><br></font>
-
-Note: linked project has some extra code (not inherent to Paginator) just to show it in the context. Read further for details on what's actually important for the Paginator.
+Note: linked project has some extra code (not inherent to MMTabler) just to show it in the context: it uses MMPaginator to browse through table data. Read further for details on what's actually important for the MMTabler.
 
 ---
 
 # 2. Usage
 
-## 2.1. Displaying pages
+## 2.1. Table data: format and passing to MMTabler
 
-- Displaying of pages' labels and styles depends on the _pagesToShowAroundActive_ variable. This number defines how many pages before and after the active page (the one currently selected) will be displayed in paginator.
+- Data passed to _MMTabler_ should be in the form of an array of simple non-nested objects, for example:
 
-- To display particular number of pages before and after the currently active page, set that number in parent's variables initialization:
+  ```
+  yourDataVariable = [
+    {
+      id: "Entry 1",
+      tag: "1st entry's tag",
+      comment: "Displays the details of the first entry"
+      (...)
+    },
+    {
+      id: "Entry 2",
+      tag: "2nd entry's tag",
+      comment: "Displays the details of the second entry"
+      (...)
+    }
+    ,
+    (...)
+  ]
+  ```
 
-  `pagesToShowAroundActive: number = 2;`
+- The keys of the first object (entry) will be used by default as the headers of the table. See further below (in explanation of **configuration** options) about customizing the headers' content and display.
 
-  and pass it to _[pagesToShowAroundActive]_ @Input of the paginator via the template:
+- Pass the data to _[data]_ @Input of the tabler via the template:
 
-  `[pagesToShowAroundActive]="pagesToShowAroundActive"`
+  `[data]="yourDataVariable"`
 
-- If you don't want to introduce such var in parent, just pass the value to _[pagesToShowAroundActive]_ @Input of the paginator via the template, like:
+- MMTabler will display a **warning message** (instead of the content in template) if _data_ is not passed. However, it will **not** check if the data is of the right format.
 
-  `[pagesToShowAroundActive]="2"`
+## 2.2. MMTabler to parent communication
 
-- To display only the first, last and active page, set _pagesToShowAroundActive_ to **-1**. No other pages will be displayed.
+- MMTabler will use the data to populate the table and if you want to allow editing and/or deleting and/or adding entries via MMTabler **and** have the data updated, you have to create a method _getVariablesFromTabler()_ in parent to accept emitted changes from the MMTabler like:
 
-- Minimum value of _pagesToShowAroundActive_ is **-1** and maximum is equal to total number of entries of your data.
+   ```
+   getVariablesFromTabler(data: any) {
+      this.data = data;
+   }
+   ```
 
-- Paginator will display an **warning message** (instead of the content in template) if _pagesToShowAroundActive_ doesn't meet the min/max criteria.
+- Create a _getVariablesFromTabler()_ method in parent and send it to paginator's @Output like:
 
-## 2.2. Logic of displaying and styling the pages
+  `(sendChangesToParent)="getVariablesFromTabler($event)"`
 
-- **Previous** and **Next** buttons for pages are always displayed.
+- If you don't want to allow these options (editing, deleting, adding) - you don't need to! Also, you can opt to allow these options only for displaying purposes, without keeping any of the changes (without modifying the data variable). Just see about **configuration** further below. 
 
-- **First**, **active** and **Last** page labels are always displayed.
+## 2.3. Displaying the data entries
 
-- Number of pages defined by _pagesToShowAroundActive_ are displayed before and after the **active** page.
+- To tell MMTabler how many entries (rows of data) to display, you need to initialize a variable with a value of entries to show, like:
 
-- All pages after the **first** page (page #1) and before the first page that meets the criteria of being before the **active** page by _pagesToShowAroundActive_ will be displayed as single case of three dots: ... (like in 'read more' type of shortenings).
+  `yourChoiceOfTotalNumberOfEntriesToShow: number = 30`
 
-- All pages before the **last** page and after the last page that meets the criteria of being after the **active** page by _pagesToShowAroundActive_ will be displayed as single case of three dots: ... .
+  or if you want to keep it dynamic - if your data is coming from the subscription that can change - and display **all** the entries at once:
 
-- However, if the [...] would replace just _one_ page, then it's obvious which page that is (for example if the pages 1, 3, 4 etc. are displayed and [...] stands between 1 and before 3) - the paginator will display the page number instead of [...].
+  `yourChoiceOfTotalNumberOfEntriesToShow = yourDataVariable.length`
 
-## 2.3. Entries per page
+- To pass the number of entries per page to _[entriesToShow]_ @Input of the tabler:
 
-- Entries per page are passed to paginator from parent as _entriesToShow_. This var is important in parent component too, because it should govern the logic of displaying data in table (see below about necessary parent component structure).
+  `[entriesToShow]="yourChoiceOfTotalNumberOfEntriesToShow"`
 
-- To display particular number of entries per page, set that number in parent's variables initialization:
+- If you want to add a paginator option to MMTabler (to handle displaying different entries while keeping the same number of them displayed), you'd need to write your own paginator logic, use some other paginator package/library **or** just install MMPaginator - MMTabler fits perfectly with it!
 
-  `entriesToShow: number = 2;`
+><br><font size="4">Get MMPaginator: [MMPaginator at npmjs.com](https://www.npmjs.com/package/mmpaginator)<br><br></font>
 
-  and pass it to _[entriesToShow]_ @Input of the paginator via the template:
 
-  `[entriesToShow]="entriesToShow"`
+## 2.4. Keeping track of active page
 
-- Unlike _pagesToShowAroundActive_ variable, initializing the _entriesToShow_ is necessary because you'll use it in parent template too, so it wouldn't be wise to have its value set in two different places.
+- To keep track of active page (when using any form of pagination), you need to initialize the variable, for example:
 
-- Minimum allowed value of _entriesToShow_ is 1, and maximum is equal to the number of entries in your data variable (or: to the length of it).
+  `currentlyActivePage: number = 1`
 
-- Paginator will display an **warning message** (instead of the content in template) if _entriesToShow_ doesn't meet the min/max criteria.
+- Pass the _currentlyActivePage_ to _[activePage]_ @Input of the tabler via the template:
 
-## 2.4. Data length (total number of entries)
+  `[activePage]="currentlyActivePage"` 
 
-- Passing the _dataLength_ to paginator is necessary for calculating the total number of pages to display in paginator.
+- The MMTabler will use this value combined with _entriesToShow_ to render the entries that fall into the specified range to display. If you're using **MMPaginator**, the parent component will pass the same _activePage_ variable to both packages and MMTabler and MMPaginator will work seamlessly.
 
-- Pass it to _[dataLength]_ @Input of the paginator via the template:
+- If you chose to display all the entries at once (without the need for pagination) by setting _entriesToShow_ to the length of your _data_, you can keep the _activePage_ at 1 throughout the lifecycle of your app. However, due to keeping the option to link MMTabler with any pagination system, you still **have to** pass the _activePage_ to it.
 
-  `[dataLength]="data.length"`
 
-  where you can replace _data_ in _data.length_ with the name of your data object (or array) containing the entries you're displaying in the table.
+## 2.5. Configuring the MMTabler options
 
-- Thus, it's not necessary to initialize a new variable in parent for this.
+- MMTabler comes with a range of options, simple to set up and use for handling various aspects of the table display. You initialize the _configuration_ object like:
 
-## 2.5. 'Previous' and 'Next' text on buttons
+  `configuration = {` + your choice of options + ` }`
 
-- Set your prefered textual content of the 'prev' and 'next' buttons of the paginator.
+  and for allowed options you have:
 
-- To display particular text on the buttons, set that string in parent's variables initialization:
+  | Option | Mandatory? | Description | Example |
+  |--------|------------|-------------|---------|
+  | customHeaders |  no, but must be used together with _displayHeadersFromCustomHeaders_ | used to set new headers (as strings), instead of keys from the first object in _data_ | set new headers by using existing keys of your _data_ objects as keys, and give them values of your new headers, i.e. if you used the example from above, where your _data_ objects have keys as: _id_, _tag_ and _comment_,  set it like: **customHeaders: { id: 'Header 1', tag: 'Ha, tag!', comment: 'Co mm ent' }** |
+  | customHeadersOrder |  no, but must be used together with _displayHeadersFromCustomHeaders_ and _customHeaders_ | used to set new headers order (as strings) from _customHeaders_ | set new headers order by using any of the existing values in your _customHeaders_ object, i.e. if you used the example from above, where your _customHeaders_ object is as: `{ id: 'Header 1', tag: 'Ha, tag!', comment: 'Co mm ent' }` you can set _customHeadersOrder_ like: **customHeadersOrder: [ 'Ha, tag!', 'Co mm ent', 'Header 1']** or even decide not to display some headers, like: **customHeadersOrder: [ 'Ha, tag!', 'Header 1']** |
+  | displayHeadersFromData | no, but then you'd have to use _displayHeadersFromCustomHeaders_ | if set to **true**, MMTabler will use keys from the first object in your _data_ as headers for table. If set to **false**, you have to set _displayHeadersFromCustomHeaders_ to **true**<br>You must bave either _displayHeadersFromData_ or _displayHeadersFromCustomHeaders_ set to true! | **displayHeadersFromData: true** |
+  | displayHeadersFromCustomHeaders | no, but must be used together with _customHeaders_ | used to tell MMTabler if it should use the _customHeaders_ (above) for table headers.<br>If you are not using _customHeaders_, you can omit this option, but you **must** have _displayHeadersFromData_ set to **true** | to use the headers defined as in _customHeaders_ above, set it to true: **displayHeadersFromData: true** |
+  | headersToUppercase | no | if set to **true**, MMTabler will display headers in ALL CAPS. If set to **false** or omitted, this change won't be applied.<br>You can have only one of these options set to **true**: _headersToUppercase_, _headersToCapitalized_, _headersToLowercase_ | **headersToUppercase: true** |
+  | headersToCapitalized | no | if set to **true**, MMTabler will display headers with first of the header letter capitalized, and all others in lowercase. If set to **false** or omitted, this change won't be applied.<br>You can have only one of these options set to **true**: _headersToUppercase_, _headersToCapitalized_, _headersToLowercase_  | **headersToCapitalized: false** |
+  | headersToLowercase | no | if set to **true**, MMTabler will display headers in lowercase. If set to **false** or omitted, this change won't be applied.<br>You can have only one of these options set to **true**: _headersToUppercase_, _headersToCapitalized_, _headersToLowercase_ | **headersToLowercase: false** |
+  | initialOrderBy | no | sets which header to use for initial sorting of the table data. The sorting will be initialized in ascending order | **initialOrderBy: 'id'** |
+  | allowOptions | no | If set to **true**, MMTabler will expect to have at least one of the next 3 options set to **true** too. If set to **false** or omitted, next 3 options can be omitted too.| **allowOptions: true**|
+  | allowEdit | no, but must be used together with _allowOptions_ | if set to **true**, you will get a popover with 'Edit' option when clicking on a table row. | **allowEdit: true** |
+  | allowDelete | no, but must be used together with _allowOptions_ | if set to **true**, you will get a popover with 'Delete' option when clicking on a table row. | **allowDelete: true** |
+  | allowAdd | no, but must be used together with _allowOptions_ | if set to **true**, you will get a popover with 'Add' (new) option when clicking on a table row. | **allowAdd: true** |
+  | txtEdit | no | custom text for 'Edit' button; makes sense only if _allowEdit_ is set to **true** | **txtEdit: 'Izmeni'** |
+  | txtDelete | no | custom text for 'Delete' button; makes sense only if _allowDelete_ is set to **true** | **txtDelete: 'Obriši'** |
+  | txtAdd | no | custom text for 'Add' button; makes sense only if _allowAdd_ is set to **true** | **txtAdd: 'Dodaj'** |
+  | txtCancel | no | custom text for 'Cancel' button; makes sense only if any of the 3 options above (_allowEdit_, _allowDelete_, _allowAdd_) is set to **true** | **txtCancel: 'Odustani'** |
+  | txtConfirmDelete | no | custom text for 'Do you really want to delete this entry?' text; makes sense only if _allowDelete_ is set to **true** | **txtConfirmDelete: 'Želiš li zaista da obrišeš ovaj sadržaj?'** |
+  | sendChanges | no | used to emit to parent the changes in data entries; makes sense only if options to 'edit', 'delete' or 'add' are set to **true**.<br>If used, you need to set _getVariablesFromTabler()_ method in parent, too | **sendChanges: true** |
 
-  `prevText: string = 'PREV;` // or whatever you want
+- So the _configuration_ object might look something like this, for example:
 
-  `nextText: string = 'NEXT;` // or whatever you want
+  ```
+  configuration = {
+    displayHeadersFromData: true,
+    headersToCapitalized: true,
+    allowOptions: true,
+    allowEdit: true,
+    sendChanges: true
+  }
+  ```
 
-  and pass it to _[prevText]_ and _[nextText]_ @Input of the paginator via the template:
+## 2.6. CSS details and accessing elements' properties
 
-  `[prevText]="prevText"`
+- MMTabler has its own css classes, but they depend on variables that you'll use in your global css styles file. You can change the colours, border, shadows etc. by changing the variables' values. Read **Implementation** for how to use them.
 
-  `[nextText]="nextText"`
-
-- If you don't want to introduce such vars in parent, just pass the value to _[prevText]_ and _[nextText]_ @Input of the paginator via the template, like:
-
-  `[prevText]="PREV"`
-
-  `[nextText]="NEXT"`
-
-## 2.6. Paginator to parent communication
-
-- Paginator will emit an event to parent upon changing the active page. When user selects a new page in paginator, new value of active page will be emitted to parent via _sendChangesToParent_ and received by parent through _getVariablesFromPaginator()_ method.
-
-- Create a _getVariablesFromPaginator()_ method in parent and send it to paginator's @Output like:
-
-  `(sendChangesToParent)="getVariablesFromPaginator($event)"`
-
-- See further below about how to write _getVariablesFromPaginator()_ method in parent.
+- All DOM elements of the MMTabler have their distinctive IDs, so if you need you can easily access any of them by _getElementById_. This documentation file is already rather long, so for the list of available IDs you should just look at the source of html once you install the MMTabler.
 
 ---
 
 # 3. Implementation
 
-## 3.1. Customizing paginator elements
+## 3.1. Customizing MMTabler elements
 
-- You can (and should) edit your global .css file (_styles.css_ in web app, or _global.css_ in your Ionic mobile app) by adding the following css code and edit it further to suit your design preferences. Colors in the styles have been set by their HTML color names so you can easily get a grasp of what's what.
+- You can (and **should**) edit your global .css file (_styles.css_ in web app, or _global.css_ in your Ionic mobile app) by adding the following css code and edit it further to suit your design preferences:
 
-- Paginator's global css selector is `mm-paginator`, so you can paste this into your global css file and edit it as you please:
 
 ```
-/*
-  MMPaginator STYLES: START
-*/
-
-/* general styling */
-.mm-paginator {
-    margin-top: 15px;
-    text-align: center;
-    font-family: Verdana, Arial, Tahoma, Serif;
-    font-size: 13px;
+:root {
+  /* MMTabler variables */
+  --table-border: 1px solid rgb(0, 0, 0);
+  /* headers */
+  --header-text-font-size: 13px;
+  --header-text-font-color: rgb(0, 0, 0);
+  --header-background-color: rgb(177, 220, 255);
+  --header-border-bottom-color: rgb(57, 117, 145);
+  /* rows */
+  --row-text-font-size: 12px;
+  --row-text-font-color: rgb(0, 0, 0);
+  --row-background-color: rgb(255, 255, 255);
+  --row-background-color-nth-child: rgb(235, 245, 255);
+  --row-hover-background-color: rgb(203, 232, 255);
+  /* sorting icons */
+  --sorting-icons-font-size: 14px;
+  --sorting-icons-font-color: rgb(0, 0, 0);
+  /* warning messages */
+  --warning-background-color: rgb(209, 74, 74);
+  --warning-font-color: rgb(255, 255, 255);
+  --warning-font-size: 12px;
+  /* options popover */
+  --options-container-background-color: rgb(255, 255, 255);
+  --options-container-border: 1px solid rgb(0, 0, 0);
+  --options-button-close-color: rgb(111, 174, 216);
+  --options-button-close-color-hover: rgb(0, 0, 0);
+  --options-button-close-size: 13px;
+  --options-pointer-color: rgb(0, 0, 0);
+  /* options buttons */
+  --buttons-background-color: rgb(235, 245, 255);
+  --buttons-font-size: 13px;
+  --buttons-border: 1px solid rgb(0, 0, 0);
+  --buttons-font-color: rgb(0, 0, 0);
+  --buttons-background-color-hover: rgb(203, 232, 255);
+  --buttons-background-color-selected: rgb(177, 220, 255);
+  /* single option */
+  --option-title-font-size: 13px;
+  --option-subtitle-font-size: 11px;
+  --option-key-font-size: 13px;
+  --option-key-font-color: rgb(0, 0, 0);
+  --option-border: 1px solid rgb(0, 0, 0);
+  --option-background-color: rgb(255, 255, 255);
+  --option-single-background-color: rgb(235, 245, 255);
+  --textarea-background-color: rgb(255, 255, 255);
+  --textarea-font-color: rgb(0, 0, 0);
+  --textarea-font-size: 13px;
+  /* general typing */
+  --fonts: Verdana, Arial, Tahoma, Serif;
+  /* styling */
+  --border-radius: 8px;
+  --border-thin-dark: 1px solid rgba(0, 0, 0);
+  --box-shadow: 0px 2px 10px 2px rgb(212, 212, 212);
 }
-
-/* a tag styling: used for all displayed pages */
-.mm-paginator a {
-    padding: 5px 9px;
-    border-radius: 5px;
-    margin: 3px;
-}
-  
-/* active page styling: also for 'prev' and 'next' buttons */
-.mm-paginator a.active {
-    background-color: SteelBlue;
-    color: white;
-}
-
-/* inactive page styling: for pages with displayValue==false */
-.mm-paginator a.none {
-    background-color: AliceBlue;
-    color: black;
-}
-
-/* hidden page styling: for pages with displayValue==null */
-.mm-paginator a.empty {
-    margin-left: -6px;
-    margin-right: -6px;
-}
-
-/* hover styling */
-.mm-paginator a:hover:not(.empty) {
-    background-color: MidnightBlue;
-    color: white;
-}
-
-/* warning styling */
-.mm-paginator .warning {
-    font-size: 12px;
-    border-radius: 10px;
-    padding: 10px;
-    background-color: Crimson;
-    color: white;
-}
-/*
-MMPaginator STYLES: END
-*/
 ```
 
-- IDs of the individual elements:
+- If you already have variables defined in your _root_, just paste there the values after _/* MMTabler variables */_ comment and before the last bracket.
 
-    - **main div** container: `'mm-p-main'`
-    - **previous** button: `'mm-p-prev'`
-    - **next** button: `'mm-p-next'`
-    - **empty** element (showing [...]): `'mm-p-empty'`
-    - **pages** buttons: `'mm-p-'` + their label (as number), for example: `'mm-p-1', 'mm-p-2'` etc.
+- IDs of the individual elements are too long to list, but they all start with _mmtabler-_ so it's easy to find them. 
+  Access them easily by `document.getElementById(`**theIDyouWant**`)`
 
-    Access them easily by `document.getElementById(`**theIDyouWant**`)`
-
-## 3.2. Parent component
+## 3.2. Parent component and modules
 
 ### 3.2.1. Importing the library module
 
 - Import the paginator:
 
-  `import { MMPaginatorModule } from 'mmpaginator';`
-
-  (path depending on where you put it, of course).
+  `import { MMTablerModule } from 'mmtabler';`
 
 - Add it to _imports_:
 
-  `imports: [ MMPaginatorModule ]`
+  `imports: [ MMTablerModule ]`
 
 ### 3.2.2. Changes in parent's .ts file
 
-- Initialize the variables you'll send to paginator (read **Usage** above, to see about possible differences in handling the variables):
+- Initialize the variables you'll send to MMTabler (read **Usage** above, to see about possible differences in handling the variables):
 
-```
-    entriesToShow: number = 2; // min -1, max == data.length
-    pagesToShowAroundActive: number = 1; // min 1, max == data.length
-    prevText: string = 'Prev'; // or whatever you want
-    nextText: string = 'Next'; // or whatever you want
-```
+  ```
+    data: any[] = []; // or however you name your data var
+    activePage: number = 1; // or however you name your active page var
+    entriesToShow: number = 5; // or however you name your entries per page var; min 1, max == data.length
 
-- Use this method to receive value emitted from paginator:
+  ```
 
-```
-    getVariablesFromPaginator(activePage: number) {
-        this.activePage = activePage;
+- Set configuration details, initilize them Like this (see **Usage** above for details, this is an example that uses all options):
+
+  ```
+  configuration = {
+    // custom table headers
+    customHeaders: { id: 'HeaDer', name: 'ANOTHER ONE', tag: 'thiRD' },
+    // custom order of headers
+    customHeadersOrder: ['thiRD', 'HeaDer'],
+    // handling table headers content
+    displayHeadersFromData: false,
+    displayHeadersFromCustomHeaders: true,
+    // handlig display of headers text
+    headersToUppercase: false, // optional
+    headersToCapitalized: true, // optional
+    headersToLowercase: false, // optional
+    // sorting details
+    initialOrderBy: 'Header 1', // initial key (header name) to sort by
+    allowOptions: true, // allowing edit, delete, add options on table
+    allowEdit: true, // allow edit option
+    allowDelete: true, // alow delete option
+    allowAdd: true, // allow add option
+    // text
+    txtEdit: 'Edit 1', // text for 'Edit' button
+    txtDelete: 'Delete 2', // text for 'Delete' button
+    txtAdd: 'Add 3', // text for 'Add' button
+    txtCancel: 'Cancel 4', // text for 'Cancel' button
+    txtConfirmDelete: 'Do you really really really want to delete this entry?', // text for 'Are you sure you want to delete this entry?' text
+    // if MMTabler is allowed to send changed data back to parent
+    sendChanges: true,
+  };
+  ```
+  Of course, strings like 'Header 1', 'Delete 2' etc are here as an example: use any string you want.
+
+- Use this method to receive value emitted from MMTabler (if you're going to use edit, delete or add options):
+
+  ```
+    getVariablesFromTabler(data: any) {
+        this.data = data; // instead of 'this.data' you should use your own data var, like 'this.myDataArray
     }
-```
+  ```
 
 ### 3.2.1. Changes in parent's template / html
 
-- You can set up your table and iterate over your data content in various ways, but it's important to use this logic for displaying the content:
-
-  `*ngIf="i < activePage * entriesToShow && i >= (activePage - 1) * entriesToShow"`
-
-  for example:
+- Paste this block of code into your html where you want the MMTabler to appear:
 
   ```
-  (...)
-  <tr *ngFor="let entry of data; let idx = index">
-      <ng-container *ngIf="idx < activePage * entriesToShow && idx >= (activePage - 1) * entriesToShow">
-          <td>(...))</td>
-      </ng-container>
-  </tr>
-  (...)
+  <mm-tabler
+    [data]="data"
+    [activePage]="activePage"
+    [entriesToShow]="entriesToShow"
+    [configuration]="configuration"
+    (sendChangesToParent)="getVariablesFromTabler($event)"
+  ></mm-tabler>
   ```
 
-  where you have an **_index_** (named _idx_ here, but you can name it differently) to use in the **ng-container**'s **ngIf**, the **_activePage_** as the name of the active page variable that paginator is going to emit back to parent upon changes (you can rename the var too, but be sure to rename it in parent's _getVariablesFromPaginator()_ method too), and **_entriesToShow_** as the variable that you have to pass to paginator (see **Entries per page** above).
-
-- Below your table, you have to paste this block of code:
-
-  ```
-  <!-- paginator component: start -->
-  <pagination
-      [prevText]="prevText"
-      [nextText]="nextText"
-      [entriesToShow]="entriesToShow"
-      [pagesToShowAroundActive]="pagesToShowAroundActive"
-      [dataLength]="data.length"
-      (sendChangesToParent)="getVariablesFromPaginator($event)">
-  </pagination>
-  <!-- paginator component: end -->
-  ```
+- Keep in mind: _activePage_ and _entriesToShow_ can be used in your own pagination code, but they fit perfectly with MMPaginator package too - so if you use the MMPaginator, you can just paste its code under this block. 
 
 ---
 
-# 4. Warnings in paginator
+# 4. Warnings in MMTabler
 
-- Paginator has two warning messages that it'll display instead of the (expected) content if you don't pass it expected range of values.
+- MMTabler has several warning messages that it'll display instead of the (expected) content if you don't pass it the values in right format or if there are mismatches.
 
-- If you passed wrong _pagesToShowAroundActive_ (with value under minimum or above maximum, as defined in **Displaying pages**):
+- If you didn't pass the _data_ for table:
 
-  > PAGINATOR WARNING:<br>Incorrect number entered for displaying pages before/after the active one!<br>Only -1 and higher values are accepted, and value cannot be higher than your _data.length_ value<br>Check the _pagesToShowAroundActive_ value.
+  ><b>DATA MISSING</b><br>You didn't provide any data for the table content. Please pass some data to [data] input.
 
-- If you passed wrong _entriesToShow_ (with value under minimum or above maximum, as defined in **Entries per page**):
+- If you didn't pass the _activePage_ value:
 
-  > PAGINATOR WARNING:<br>Incorrect number entered for amount of entries per page!<br>Minimum of 1 is required, and the maximum cannot exceed the _data.length_ value<br>Check the _entriesToShow_ value.
+  ><b>DATA MISSING</b><br>You didn't provide activePage (as number) to the table. Please pass some value to [activePage] input.
+
+- If you didn't pass _entriesToShow_ value:
+
+  ><b>DATA MISSING</b><br>You didn't provide (number of) entriesToShow to the table. Please pass some value to [entriesToShow] input.
+
+- If you wanted you use custom headers, but you didn't set them in configuration:
+
+  ><b>HEADERS MISSING</b><br>Your setting in configuration sets 'displayHeadersFromDataHeaders' to 'true', but you haven't supplied 'customHeaders' to take headers from!
+
+- If you set _allowOptions_ to **true** but forgot to set any of the individual options (edit, delete, add) to **true**:
+
+  ><b>OPTIONS MISSING</b><br>Your setting in configuration sets 'allowOptions' to 'true', but you haven't supplied any particular option as 'true' (allowEdit, allowDelete or allowAdd).
+
+- If you set configuration to use both the headers from _data_ **and** the headers from _customHeaders_:
+
+  ><b>HEADERS COLLISION</b><br>Your setting in configuration sets both 'displayHeadersFromData' and 'displayHeadersFromCustomHeaders' to 'true', but you can only have one of those options set to 'true'.
+
+- If you accidentally set configuration to use all three possible css displays of headers:
+
+  ><b>HEADERS STYLES COLLISION</b><br>Your setting in configuration sets 'headersToUppercase', 'headersToCapitalized' and 'headersToLowercase' to 'true', but you can have only one of those set to 'true'.
+
+- If you accidentally set configuration to use two of the possible css displays of headers:
+
+  ><b>HEADERS STYLES COLLISION</b><br>Your setting in configuration sets two of these options to 'true': 'headersToUppercase', 'headersToCapitalized' or 'headersToLowercase', but you can have only one of those set to 'true'.
+
+- If you wanted to use custom headers and order it initially, but you set the wrong (non-existent) header name in _initialOrderBy_:
+
+  ><b>HEADERS MISMATCH</b><br>Your setting in configuration sets 'displayHeadersFromCustomHeaders' to 'true', but the value you passed for 'initialOrderBy' is not included in your 'customHeaders'. Check the values for typos
+
+- If you didn't pass _configuration_ value to MMTabler at all:
+
+  ><b>CONFIGURATION MISSING</b><br>You did not provide configuration for the MMTable. Please check the documentation.
+
+- If you wanted to emit changes from MMTabler to parent, but forgot to pass it a method for emitter:
+
+  ><b>DATA UPDATE ISSUE</b><br>You set 'sendChanges' in configuration to emit data changes from MMTabler to parent, but you didn't pass 'sendChangesToParent' value/method to MMTabler. Please check the documentation.
+
+---
+
+# 5. Changes in the versions
+
+For version: 1.1.0:
+- Removed one obsolete `console.log` (sorry... xD)
+- Added an option to change the order of table headers and/or display only some of them. Also added warnings if user's configuration values for this change are misconfigured.
 
 ---
 

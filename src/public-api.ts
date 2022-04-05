@@ -1,6 +1,6 @@
 /*
- * Public API Surface of mmpaginator
+ * Public API Surface of mmtabler
  */
 
-export * from './lib/mmpaginator.component';
-export * from './lib/mmpaginator.module';
+export * from './lib/mmtabler.component';
+export * from './lib/mmtabler.module';
